@@ -8,6 +8,8 @@ import numpy as np
 # 1. Load the dataset
 df = pd.read_excel("modified.xls", engine='openpyxl')
 
+df = pd.get_dummies(df)
+
 # 2. Initial features and target
 X = df.drop(columns=["G3"])
 y = df["G3"]
