@@ -1,12 +1,13 @@
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+import matplotlib.pyplot as plt
+import numpy as np
 
 # 1. Load the dataset
-df = pd.read_excel("modified.xls", engine='openpyxl')
+file_path = "/content/modified.xls"
+df = pd.read_excel(file_path, engine='xlrd')
 
 # 2. Initial features and target
 X = df.drop(columns=["G3"])
