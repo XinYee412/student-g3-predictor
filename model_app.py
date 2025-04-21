@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # 1. Load the dataset
-df = pd.read_excel("modified.xls", engine='openpyxl')
+df = pd.read_excel("modified.xls")
 
 df = pd.get_dummies(df)
 
