@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # 1. Load the dataset
-file_path = "/content/modified.xls"
+file_path = "modified.xls"
 df = pd.read_excel(file_path, engine='xlrd')
 
 # 2. Initial features and target
