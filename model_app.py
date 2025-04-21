@@ -25,9 +25,6 @@ model.fit(X_train, y_train)
 importances = model.feature_importances_
 feature_names = X.columns
 
-importances = model_full.feature_importances_
-feature_names = X.columns
-
 importance_df = pd.DataFrame({
     'Feature': feature_names,
     'Importance': importances
