@@ -6,8 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # 1. Load the dataset
-df = pd.read_excel("modified.xls")
-
+df = pd.read_excel("modified.xls", engine='xlrd')
 df = pd.get_dummies(df)
 
 # 2. Initial features and target
