@@ -6,26 +6,34 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # 1. Load the dataset
-df = pd.read_excel("modified.xls", engine='xlrd')
-df = pd.get_dummies(df)
+file_path = "/content/modified.xls"
+df = pd.read_excel(file_path, engine='xlrd')
 
 # 2. Initial features and target
 X = df.drop(columns=["G3"])
 y = df["G3"]
 
+X = pd.get_dummies(X)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
 # 3. Train full model to get feature importance
-model_full = RandomForestRegressor(n_estimators=100, random_state=42)
-model_full.fit(X, y)
+model = RandomForestRegressor(n_estimators=200, random_state=50)
+model.fit(X_train, y_train)
 
 # 4. Get top N important features
+importances = model.feature_importances_
+feature_names = X.columns
+
 importances = model_full.feature_importances_
 feature_names = X.columns
+
 importance_df = pd.DataFrame({
     'Feature': feature_names,
     'Importance': importances
 }).sort_values(by='Importance', ascending=False)
 
-top_n = 5  # Choose top 5 important features
+top_n = 10  # Choose top 5 important features
 top_features = importance_df['Feature'].head(top_n).tolist()
 
 print(f"\nTop {top_n} features used for training:")
@@ -36,7 +44,7 @@ X_top = X[top_features]
 X_train, X_test, y_train, y_test = train_test_split(X_top, y, test_size=0.2, random_state=42)
 
 # 6. Train new model with selected features
-model = RandomForestRegressor(n_estimators=100, random_state=42)
+model = RandomForestRegressor(n_estimators=200,max_depth=10, random_state=42)
 model.fit(X_train, y_train)
 
 # 7. Prediction and Evaluation
