@@ -6,8 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # 1. Load the dataset
-file_path = "modified.xls"
-df = pd.read_excel(file_path, engine='xlrd')
+df = pd.read_excel("modified(1).xls", engine='openpyxl')
 
 # 2. Initial features and target
 X = df.drop(columns=["G3"])
