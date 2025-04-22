@@ -1,83 +1,59 @@
-import streamlit as st
 import pandas as pd
-import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import matplotlib.pyplot as plt
+import numpy as np
 
-st.set_page_config(page_title="Student G3 Predictor", layout="centered")
-st.title("📚 Student G3 Grade Predictor")
-
+# 1. Load the dataset
 file_path = "modified.xls"
+df = pd.read_excel(file_path, engine='xlrd')
 
-try:
-    # 自动尝试不同 engine
-    try:
-        df = pd.read_excel(file_path, engine='openpyxl')
-    except:
-        df = pd.read_excel(file_path, engine='xlrd')
+# 2. Initial features and target
+X = df.drop(columns=["G3"])
+y = df["G3"]
 
-    st.success("✅ File 'modified.xls' loaded successfully!")
-    st.write("📄 Data preview:", df.head())
+X = pd.get_dummies(X)
 
-    if "G3" not in df.columns:
-        st.error("❌ The dataset must contain a 'G3' column.")
-    else:
-        X = df.drop(columns=["G3"])
-        y = df["G3"]
-        X = pd.get_dummies(X)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# 3. Train full model to get feature importance
+model = RandomForestRegressor(n_estimators=200, random_state=50)
+model.fit(X_train, y_train)
 
-        # Full model
-        model_full = RandomForestRegressor(n_estimators=200, random_state=50)
-        model_full.fit(X_train, y_train)
+# 4. Get top N important features
+importances = model.feature_importances_
+feature_names = X.columns
 
-        importances = model_full.feature_importances_
-        feature_names = X.columns
+importance_df = pd.DataFrame({
+    'Feature': feature_names,
+    'Importance': importances
+}).sort_values(by='Importance', ascending=False)
 
-        importance_df = pd.DataFrame({
-            'Feature': feature_names,
-            'Importance': importances
-        }).sort_values(by='Importance', ascending=False)
+top_n = 10  # Choose top 5 important features
+top_features = importance_df['Feature'].head(top_n).tolist()
 
-        top_n = st.slider("Select number of top features to use", min_value=5, max_value=len(feature_names), value=10)
-        top_features = importance_df['Feature'].head(top_n).tolist()
+print(f"\nTop {top_n} features used for training:")
+print(top_features)
 
-        st.subheader("🔍 Top Important Features")
-        st.write(top_features)
+# 5. Use only top features for training
+X_top = X[top_features]
+X_train, X_test, y_train, y_test = train_test_split(X_top, y, test_size=0.2, random_state=42)
 
-        # Train model with top features
-        X_top = X[top_features]
-        X_train, X_test, y_train, y_test = train_test_split(X_top, y, test_size=0.2, random_state=42)
+# 6. Train new model with selected features
+model = RandomForestRegressor(n_estimators=200,max_depth=10, random_state=42)
+model.fit(X_train, y_train)
 
-        model = RandomForestRegressor(n_estimators=200, max_depth=10, random_state=42)
-        model.fit(X_train, y_train)
-        y_pred = model.predict(X_test)
+# 7. Prediction and Evaluation
+y_pred = model.predict(X_test)
 
-        # Evaluation
-        mae = mean_absolute_error(y_test, y_pred)
-        mse = mean_squared_error(y_test, y_pred)
-        r2 = r2_score(y_test, y_pred)
-        success_rate = np.mean(np.abs(y_test - y_pred) <= 2.0) * 100
+mae = mean_absolute_error(y_test, y_pred)
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+success_rate = np.mean(np.abs(y_test - y_pred) <= 2.0) * 100
 
-        st.subheader("📊 Model Evaluation")
-        st.write(f"**MAE:** {mae:.2f}")
-        st.write(f"**MSE:** {mse:.2f}")
-        st.write(f"**R² Score:** {r2:.4f}")
-        st.write(f"**Success Rate (±2):** {success_rate:.2f}%")
-
-        # Plot feature importance
-        st.subheader("📈 Feature Importance")
-        fig, ax = plt.subplots()
-        ax.barh(importance_df['Feature'][:top_n], importance_df['Importance'][:top_n])
-        ax.set_xlabel("Importance")
-        ax.set_ylabel("Feature")
-        ax.invert_yaxis()
-        st.pyplot(fig)
-
-except FileNotFoundError:
-    st.error("❌ The file 'modified.xls' was not found in the current directory.")
-except Exception as e:
-    st.error(f"🚫 Unexpected error occurred: {str(e)}")
+print("\n🔍 Evaluation using top features:")
+print("Mean Absolute Error:", mae)
+print("Mean Squared Error:", mse)
+print("R-squared Score:", r2)
+print(f"Success Rate (±2): {success_rate:.2f}%")
