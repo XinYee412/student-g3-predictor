@@ -59,14 +59,16 @@ user_input = {
     'famrel': famrel,
     'health': health,
     'goout': goout,
-    'Fedu': Fedu,
-    'reason_home': 1 if reason == "home" else 0,
-    'reason_reputation': 1 if reason == "reputation" else 0,
-    'reason_course': 1 if reason == "course" else 0,
-    'reason_other': 1 if reason == "other" else 0,
-    'schoolsup_yes': 1 if schoolsup == "yes" else 0,
-    'schoolsup_no': 1 if schoolsup == "no" else 0
+    'Fedu': Fedu
 }
+
+# One-hot encode reason
+for r in ["home", "reputation", "course", "other"]:
+    user_input[f"reason_{r}"] = 1 if reason == r else 0
+
+# One-hot encode schoolsup
+for s in ["yes", "no"]:
+    user_input[f"schoolsup_{s}"] = 1 if schoolsup == s else 0
 
 # Ensure input matches training feature order
 X_all_columns = model.feature_names_in_
