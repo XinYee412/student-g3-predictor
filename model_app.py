@@ -1,62 +1,47 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+import joblib
 
-st.set_page_config(page_title="Student G3 Predictor", layout="centered")
-st.title("🎓 Student Final Grade (G3) Predictor")
+# Title
+st.title("🎓 Student G3 Grade Predictor")
 
-# Load dataset
-file_path = "modified.xls"
-try:
-    try:
-        df = pd.read_excel(file_path, engine='openpyxl')
-    except:
-        df = pd.read_excel(file_path, engine='xlrd')
+# Load dataset and preprocess
+@st.cache_data
+def load_data():
+    df = pd.read_excel("modified.xls", engine="xlrd")
+    df = pd.get_dummies(df.drop(columns=["G3"]))
+    return df
 
-    if "G3" not in df.columns:
-        st.error("❌ 'G3' column not found in the dataset.")
+# Load data and train model
+df = load_data()
+target = pd.read_excel("modified.xls", engine="xlrd")["G3"]
+
+# You can manually select the top 10 features from earlier analysis
+top_features = [
+    'G1', 'G2', 'failures', 'studytime', 'absences',
+    'goout', 'health', 'Walc', 'Dalc', 'schoolsup_yes'
+]
+
+X = df[top_features]
+y = target
+
+model = RandomForestRegressor(n_estimators=200, random_state=42)
+model.fit(X, y)
+
+# User input
+st.subheader("📋 Enter Student Data")
+
+input_data = {}
+for feature in top_features:
+    if feature in ['schoolsup_yes']:
+        input_data[feature] = st.selectbox(f"{feature.replace('_', ' ').title()}", [0, 1])
     else:
-        # Preprocessing
-        X = df.drop(columns=["G3"])
-        y = df["G3"]
-        X = pd.get_dummies(X)
+        input_data[feature] = st.number_input(f"{feature.replace('_', ' ').title()}", value=0)
 
-        # Train model on all data
-        model = RandomForestRegressor(n_estimators=200, random_state=42)
-        model.fit(X, y)
-
-        # Choose 10 most common features (you can manually adjust this)
-        # For simplicity, here we hardcode 10 most relevant or easy-to-enter features
-        top_features = [
-            'age', 'Medu', 'Fedu', 'studytime', 'failures',
-            'absences', 'goout', 'health', 'Walc', 'Dalc'
-        ]
-
-        st.subheader("📝 Enter your information:")
-
-        user_input = {}
-        for feature in top_features:
-            user_input[feature] = st.number_input(f"{feature}:", min_value=0, value=0)
-
-        # Prepare input
-        if st.button("🎯 Predict G3"):
-            input_df = pd.DataFrame([user_input])
-
-            # Fill in missing columns
-            for col in X.columns:
-                if col not in input_df.columns:
-                    input_df[col] = 0
-            input_df = input_df[X.columns]  # match order
-
-            prediction = model.predict(input_df)[0]
-
-            st.subheader("📊 Prediction Result")
-            st.success(f"🎯 Predicted G3 grade: **{round(prediction, 2)}**")
-
-except FileNotFoundError:
-    st.error("⚠️ File 'modified.xls' not found.")
-except Exception as e:
-    st.error(f"🚫 An error occurred: {e}")
+# Predict button
+if st.button("Predict G3 Score"):
+    input_array = np.array([list(input_data.values())])
+    prediction = model.predict(input_array)[0]
+    st.success(f"🎯 Predicted G3 Score: {prediction:.2f}")
