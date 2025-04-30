@@ -13,11 +13,6 @@ df = pd.read_excel(file_path, engine='xlrd')
 # Preprocess
 X = df.drop(columns=["G3"])
 y = df["G3"]
-
-# Save original columns before dummy encoding
-original_columns = X.columns.tolist()
-
-# Dummy encoding
 X = pd.get_dummies(X)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -25,61 +20,35 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 model = RandomForestRegressor(n_estimators=200, max_depth=10, random_state=42)
 model.fit(X_train, y_train)
 
-# Feature importance
-importances = model.feature_importances_
-importance_df = pd.DataFrame({
-    'Feature': X.columns,
-    'Importance': importances
-}).sort_values(by='Importance', ascending=False)
+# Manually define top 10 features (from your provided list)
+top_features = [
+    "G2", "absences", "reason_home", "age", "G1",
+    "famrel", "reason_course", "health", "goout", "schoolsup_no"
+]
 
-top_n = 10
-top_features = importance_df['Feature'].head(top_n).tolist()
+st.subheader("Top 10 Important Features Used for Prediction:")
+st.write(top_features)
 
 st.markdown("---")
 st.subheader("🔍 Enter student data to predict G3 score")
 
-# Input form using sliders or selections
+# Input form based on the 10 important features
 user_input = {}
+
 for feature in top_features:
-    label = feature.replace("_", " ").capitalize()
-    base_feature = feature.split("_")[0]  # Use base to map to original column
-
-    if feature.startswith("sex_"):
-        selected = st.selectbox("Gender", ["M", "F"])
-        user_input[feature] = 1 if selected == "M" and feature == "sex_M" else 0
-
-    elif feature.startswith("address_"):
-        selected = st.selectbox("Address Type", ["Urban (U)", "Rural (R)"])
-        user_input[feature] = 1 if selected.startswith("U") and feature == "address_U" else 0
-
-    elif "famrel" in feature:
-        user_input[feature] = st.slider("Family Relationship Quality (1 = very bad, 5 = excellent)", 1, 5, 3)
-
-    elif "studytime" in feature:
-        user_input[feature] = st.slider("Weekly Study Time (1 = <2hrs, 4 = >10hrs)", 1, 4, 2)
-
-    elif "failures" in feature:
-        user_input[feature] = st.slider("Number of Past Class Failures", 0, 4, 0)
-
-    elif "absences" in feature:
-        user_input[feature] = st.slider("Absences", 0, 50, 5)
-
-    elif base_feature in original_columns and df[base_feature].nunique() <= 10:
-        user_input[feature] = st.slider(f"{label}", 0, 20, 10)
-
-    else:
-        user_input[feature] = st.slider(f"{label}", 0, 100, 0)
-
-# Convert to DataFrame
-input_df = pd.DataFrame([user_input])
-
-# Add missing columns for dummy variables
-for col in X.columns:
-    if col not in input_df.columns:
-        input_df[col] = 0
-input_df = input_df[X.columns]  # Ensure correct column order
-
-# Predict
-if st.button("Predict G3 Score"):
-    prediction = model.predict(input_df)[0]
-    st.success(f"📘 Predicted G3 Score: {prediction:.2f}")
+    if feature == "G2":
+        user_input[feature] = st.slider("Previous Grade (G2)", 0, 20, 10)
+    elif feature == "G1":
+        user_input[feature] = st.slider("First Period Grade (G1)", 0, 20, 10)
+    elif feature == "absences":
+        user_input[feature] = st.slider("Number of Absences", 0, 100, 5)
+    elif feature == "age":
+        user_input[feature] = st.slider("Age", 15, 22, 17)
+    elif feature == "famrel":
+        user_input[feature] = st.slider("Family Relationship (1 = very bad, 5 = excellent)", 1, 5, 3)
+    elif feature == "health":
+        user_input[feature] = st.slider("Health Status (1 = very bad, 5 = excellent)", 1, 5, 3)
+    elif feature == "goout":
+        user_input[feature] = st.slider("Going Out with Friends (1 = very low, 5 = very high)", 1, 5, 3)
+    elif feature == "reason_home":
+        user_input[feature] = st.select_
