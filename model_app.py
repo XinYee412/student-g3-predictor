@@ -26,9 +26,6 @@ top_features = [
     "famrel", "reason_course", "health", "goout", "schoolsup_no"
 ]
 
-st.subheader("Top 10 Important Features Used for Prediction:")
-st.write(top_features)
-
 st.markdown("---")
 st.subheader("🔍 Enter student data to predict G3 score")
 
