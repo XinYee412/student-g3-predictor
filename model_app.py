@@ -9,9 +9,18 @@ st.title("🎓 Student Final Grade (G3) Predictor")
 # 加载训练好的模型
 @st.cache_resource
 def load_model():
-    return joblib.load("student_grade_model.pkl")
+    try:
+        model = joblib.load("student_grade_model.pkl")  # 尝试加载模型
+        return model
+    except FileNotFoundError:
+        st.error("Model file not found! Please ensure the model file is in the correct location.")
+        return None  # 返回 None 表示模型加载失败
 
 model = load_model()
+
+# 如果模型加载失败，停止后续操作
+if model is None:
+    st.stop()
 
 # 示例输入（你可以根据需要换成动态输入）
 st.subheader("🔍 Enter student data to predict G3 score")
