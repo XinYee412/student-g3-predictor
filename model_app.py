@@ -34,7 +34,7 @@ health = st.slider("Current health status (1 - very bad to 5 - very good)", 1, 5
                    help="Student's current health condition")
 
 # Going out with friends
-goout = st.slider("Going out frequency (1 - very low to 5 - very high)", 1, 5, 3,
+goout = st.slider("Going out with friends (1 - very low to 5 - very high)", 1, 5, 3,
                   help="How often the student goes out with friends")
 
 # Father's education level
