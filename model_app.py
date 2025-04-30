@@ -8,7 +8,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 st.set_page_config(page_title="Student G3 Predictor", layout="centered")
 st.title("🎓 Student Final Grade (G3) Predictor")
 
-# 1. Load dataset
+# Load dataset
 file_path = "modified.xls"
 try:
     try:
@@ -24,45 +24,37 @@ try:
         y = df["G3"]
         X = pd.get_dummies(X)
 
-        # Train model on full features
+        # Train model on all data
         model = RandomForestRegressor(n_estimators=200, random_state=42)
         model.fit(X, y)
 
-        # Get top 10 important features
-        importances = model.feature_importances_
-        importance_df = pd.DataFrame({
-            "Feature": X.columns,
-            "Importance": importances
-        }).sort_values(by="Importance", ascending=False)
+        # Choose 10 most common features (you can manually adjust this)
+        # For simplicity, here we hardcode 10 most relevant or easy-to-enter features
+        top_features = [
+            'age', 'Medu', 'Fedu', 'studytime', 'failures',
+            'absences', 'goout', 'health', 'Walc', 'Dalc'
+        ]
 
-        top_features = importance_df["Feature"].head(10).tolist()
-        #st.success("Top 10 important features selected for prediction:")
-        #st.write(top_features)
-
-        # User input for those features
-        st.subheader("📝 Enter values for the following features")
+        st.subheader("📝 Enter your information:")
 
         user_input = {}
         for feature in top_features:
-            if feature not in df.columns or df[feature].dtype == 'object':
-                user_input[feature] = st.selectbox(f"{feature}:", [0, 1])
-            else:
-                user_input[feature] = st.number_input(f"{feature}:", value=0.0)
+            user_input[feature] = st.number_input(f"{feature}:", min_value=0, value=0)
 
-        # Predict
+        # Prepare input
         if st.button("🎯 Predict G3"):
             input_df = pd.DataFrame([user_input])
 
-            # Add missing columns
+            # Fill in missing columns
             for col in X.columns:
                 if col not in input_df.columns:
                     input_df[col] = 0
-            input_df = input_df[X.columns]  # Ensure column order matches
+            input_df = input_df[X.columns]  # match order
 
             prediction = model.predict(input_df)[0]
 
             st.subheader("📊 Prediction Result")
-            st.write(f"✅ Predicted G3 grade: **{round(prediction, 2)}**")
+            st.success(f"🎯 Predicted G3 grade: **{round(prediction, 2)}**")
 
 except FileNotFoundError:
     st.error("⚠️ File 'modified.xls' not found.")
