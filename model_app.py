@@ -36,7 +36,7 @@ try:
         }).sort_values(by="Importance", ascending=False)
 
         top_features = importance_df["Feature"].head(10).tolist()
-        st.success("Top 10 important features selected for prediction:")
+        #st.success("Top 10 important features selected for prediction:")
         #st.write(top_features)
 
         # User input for those features
