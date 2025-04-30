@@ -17,8 +17,10 @@ st.subheader("📝 Enter Student Information")
 age = st.slider("Age (15 - 22 years)", 15, 22, 17, help="Student's age")
 
 # First and second period grades
-G1 = st.slider("First period grade (G1: 0 - 20)", 0, 20, 10, help="Grade from first term")
-G2 = st.slider("Second period grade (G2: 0 - 20)", 0, 20, 10, help="Grade from second term")
+G1 = st.number_input("First period grade (G1: 0 - 20)", min_value=0, max_value=20, value=10,
+                     help="Grade from first term")
+G2 = st.number_input("Second period grade (G2: 0 - 20)", min_value=0, max_value=20, value=10,
+                     help="Grade from second term")
 
 # Absences
 absences = st.slider("Number of school absences (0 - 93)", 0, 93, 5, help="Number of school absences")
