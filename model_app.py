@@ -36,24 +36,40 @@ st.write(top_features)
 st.markdown("---")
 st.subheader("🔍 Enter student data to predict G3 score")
 
-# Input form
+# Input form with sliders and selectboxes
 user_input = {}
 for feature in top_features:
+    label = feature.replace("_", " ").capitalize()
+
     if feature.startswith('sex_'):
         user_input[feature] = st.selectbox("Gender", ["M", "F"]) == "M"
-    elif feature in X.columns and df[feature].nunique() <= 10:
-        user_input[feature] = st.number_input(f"{feature}", min_value=0, max_value=20, value=0)
+
+    elif "famrel" in feature:
+        user_input[feature] = st.slider("Family Relationship Quality (1 = very bad, 5 = excellent)", 1, 5, 3)
+
+    elif "studytime" in feature:
+        user_input[feature] = st.slider("Weekly Study Time (1 = <2hrs, 4 = >10hrs)", 1, 4, 2)
+
+    elif "failures" in feature:
+        user_input[feature] = st.slider("Number of Past Class Failures", 0, 4, 0)
+
+    elif "absences" in feature:
+        user_input[feature] = st.slider("Absences", 0, 50, 5)
+
+    elif df[feature].nunique() <= 10:
+        user_input[feature] = st.slider(f"{label}", 0, 20, 10)
+
     else:
-        user_input[feature] = st.number_input(f"{feature}", value=0)
+        user_input[feature] = st.slider(f"{label}", 0, 100, 0)
 
 # Prepare input
 input_df = pd.DataFrame([user_input])
 
-# Add missing columns for dummy variables
+# Fill missing dummy columns
 for col in X.columns:
     if col not in input_df.columns:
         input_df[col] = 0
-input_df = input_df[X.columns]  # Ensure column order matches training data
+input_df = input_df[X.columns]  # Match training column order
 
 # Predict
 if st.button("Predict G3 Score"):
