@@ -20,10 +20,9 @@ target = pd.read_excel("modified.xls", engine="xlrd")["G3"]
 
 # You can manually select the top 10 features from earlier analysis
 top_features = [
-    'G1', 'G2', 'failures', 'studytime', 'absences',
-    'goout', 'health', 'Walc', 'Dalc', 'schoolsup_yes'
+    'G2', 'absences', 'reason_home', 'age', 'G1',
+    'famrel', 'reason_course', 'health', 'goout', 'schoolsup_no'
 ]
-
 X = df[top_features]
 y = target
 
