@@ -1,44 +1,54 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-import joblib  # 用于加载模型
+import joblib
 
-# 页面标题
-st.title("🎓 Student Final Grade (G3) Predictor")
+st.title("🎓 Final Grade (G3) Prediction System")
 
-# 加载训练好的模型
+# Load the trained model
 @st.cache_resource
 def load_model():
-    try:
-        model = joblib.load("student_grade_model.pkl")  # 尝试加载模型
-        return model
-    except FileNotFoundError:
-        st.error("Model file not found! Please ensure the model file is in the correct location.")
-        return None  # 返回 None 表示模型加载失败
+    return joblib.load("student_grade_model.pkl")
 
 model = load_model()
 
-# 如果模型加载失败，停止后续操作
-if model is None:
-    st.stop()
+st.subheader("📝 Enter Student Information")
 
-# 示例输入（你可以根据需要换成动态输入）
-st.subheader("🔍 Enter student data to predict G3 score")
+# Age
+age = st.slider("Age (15 - 22 years)", 15, 22, 17, help="Student's age")
 
-age = st.slider("Age", 15, 22, 17)
-G1 = st.slider("G1 Score", 0, 20, 10)
-G2 = st.slider("G2 Score", 0, 20, 10)
-absences = st.slider("Absences", 0, 100, 5)
-famrel = st.slider("Family Relationship Quality", 1, 5, 3)
-health = st.slider("Health Status", 1, 5, 3)
-goout = st.slider("Going Out with Friends", 1, 5, 3)
-Fedu = st.slider("Father's Education Level", 0, 4, 2)
+# First and second period grades
+G1 = st.slider("First period grade (G1: 0 - 20)", 0, 20, 10, help="Grade from first term")
+G2 = st.slider("Second period grade (G2: 0 - 20)", 0, 20, 10, help="Grade from second term")
 
-# reason 和 schoolsup 需要 One-hot 编码
-reason = st.selectbox("Reason for choosing school", ["home", "course"])
-schoolsup = st.radio("Extra Educational Support", ["yes", "no"])
+# Absences
+absences = st.slider("Number of school absences (0 - 93)", 0, 93, 5, help="Number of school absences")
 
-# 构建输入特征字典
+# Family relationship quality
+famrel = st.slider("Family relationship quality (1 - very bad to 5 - excellent)", 1, 5, 3,
+                   help="Quality of relationships with family")
+
+# Health status
+health = st.slider("Current health status (1 - very bad to 5 - very good)", 1, 5, 3,
+                   help="Student's current health condition")
+
+# Going out with friends
+goout = st.slider("Going out frequency (1 - very low to 5 - very high)", 1, 5, 3,
+                  help="How often the student goes out with friends")
+
+# Father's education level
+Fedu = st.slider("Father's education (0 - none to 4 - higher education)", 0, 4, 2,
+                 help="Father's highest education level")
+
+# Reason for choosing the school
+reason = st.selectbox("Reason for choosing this school", 
+                      ["home", "reputation", "course", "other"],
+                      help="Main reason the student chose this school")
+
+# Extra educational support
+schoolsup = st.radio("Extra educational support", ["yes", "no"],
+                     help="Whether the student receives additional educational support")
+
+# ---- Prepare data for model ----
 user_input = {
     'age': age,
     'G1': G1,
@@ -49,20 +59,22 @@ user_input = {
     'goout': goout,
     'Fedu': Fedu,
     'reason_home': 1 if reason == "home" else 0,
+    'reason_reputation': 1 if reason == "reputation" else 0,
     'reason_course': 1 if reason == "course" else 0,
+    'reason_other': 1 if reason == "other" else 0,
     'schoolsup_yes': 1 if schoolsup == "yes" else 0,
     'schoolsup_no': 1 if schoolsup == "no" else 0
 }
 
-# 转换成 DataFrame，并填补缺失列
-X_all_columns = model.feature_names_in_  # 模型训练时的列名顺序
+# Ensure input matches training feature order
+X_all_columns = model.feature_names_in_
 input_df = pd.DataFrame([user_input])
 for col in X_all_columns:
     if col not in input_df.columns:
         input_df[col] = 0
 input_df = input_df[X_all_columns]
 
-# 预测并显示结果
-if st.button("Predict G3 Score"):
-    pred = model.predict(input_df)[0]
-    st.success(f"📘 Predicted Final Grade (G3): {pred:.2f}")
+# Predict button
+if st.button("🔍 Predict Final Grade (G3)"):
+    prediction = model.predict(input_df)[0]
+    st.success(f"📘 Predicted final grade (G3): **{prediction:.2f}** out of 20")
