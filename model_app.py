@@ -35,9 +35,6 @@ importance_df = pd.DataFrame({
 top_n = 10
 top_features = importance_df['Feature'].head(top_n).tolist()
 
-st.subheader(f"Top {top_n} Important Features:")
-st.write(top_features)
-
 st.markdown("---")
 st.subheader("🔍 Enter student data to predict G3 score")
 
